@@ -3,47 +3,48 @@ import ReactDOM from 'react-dom';
 import { createStore } from 'redux';
 import './index.css';
 import expect, { createSpy, spyOn, isSpy } from 'expect';
+var deepFreeze = require('deep-freeze');
 
-const counter = (state = 0, action) => {
-	switch (action.type) {
-		case 'INCREMENT':
-			return state + 1;
-		case 'DECREMENT':
-			return state - 1;
-		default:
-			return state;
-	}
+const addCounter = list => {
+	return [...list, 0];
 };
 
-const Counter = ({ value, onIncrement, onDecrement }) => (
-	<div>
-		<h1>{value}</h1>
-		<button onClick={onIncrement}>+</button>
-		<button onClick={onDecrement}>-</button>
-	</div>
-);
-
-const store = createStore(counter);
-
-expect(counter(0, { type: 'INCREMENT' })).toEqual(1);
-expect(counter(1, { type: 'INCREMENT' })).toEqual(2);
-expect(counter(2, { type: 'DECREMENT' })).toEqual(1);
-expect(counter(1, { type: 'DECREMENT' })).toEqual(0);
-expect(counter(1, { type: 'SOMETHING_ELSE' })).toEqual(1);
-
-const render = () => {
-	ReactDOM.render(
-		<Counter
-			value={store.getState()}
-			onIncrement={() => {
-				store.dispatch({ type: 'INCREMENT' });
-			}}
-			onDecrement={() => {
-				store.dispatch({ type: 'DECREMENT' });
-			}}
-		/>,
-		document.getElementById('root')
-	);
+const removeCounter = (list, index) => {
+	return [...list.slice(0, index), ...list.slice(index + 1)];
 };
-store.subscribe(render);
-render();
+
+const incrementCounter = (list, index) => {
+	return [...list.slice(0, index), list[index] + 1, ...list.slice(index + 1)];
+};
+
+const testAddCounter = () => {
+	const listBefore = [];
+	const listAfter = [0];
+
+	deepFreeze(listBefore);
+
+	expect(addCounter(listBefore)).toEqual(listAfter);
+};
+
+const testRemoveCounter = () => {
+	const listBefore = [0, 10, 20];
+	const listAfter = [0, 20];
+
+	deepFreeze(listBefore);
+
+	expect(removeCounter(listBefore, 1)).toEqual(listAfter);
+};
+
+const testIncrementCounter = () => {
+	const listBefore = [0, 10, 20];
+	const listAfter = [0, 11, 20];
+
+	deepFreeze(listBefore);
+
+	expect(incrementCounter(listBefore, 1)).toEqual(listAfter);
+};
+
+testAddCounter();
+testRemoveCounter();
+testIncrementCounter();
+console.log('All tests passed.');
